@@ -81,6 +81,7 @@ void WFS(int** graph, int graph_size, int start_vertex) {
 	delete[] queue;
 }
 
+
 bool Cycler(int** graph, int graph_size, bool* visited,  int vertex, int parent) {
 	visited[vertex] = true;
 
@@ -135,12 +136,60 @@ void DisplayGraphVertx(int** graph, int g_size) {
     }
 }
 
-int main() {
-          
-    int g_size;
-    std::ifstream file("input.txt");
+void TopoVertxDisplay(int** graph, int g_size, int vertex, bool* visited, int& currentIndex, int* vertx_list) {
+    visited[vertex] = true;
+    for (int i = 0; i < g_size; i++) {
+        if (graph[vertex][i] && !visited[i]) {
+            TopoVertxDisplay(graph, g_size, i, visited, currentIndex, vertx_list);
+        }
+    }
+    vertx_list[currentIndex--] = vertex;
+}
 
-    if (file.is_open()) {
+void TopoVertxDisplay(int** graph, int g_size) {
+    int* vertx_list = new int[g_size];
+    bool* visited = new bool[g_size];
+    for (int i = 0; i < g_size; i++) {
+        visited[i] = false;
+    }
+    int currentIndex = g_size - 1;
+    for (int i = 0; i < g_size; i++) {
+        if (!visited[i]) {
+            TopoVertxDisplay(graph, g_size, i, visited, currentIndex, vertx_list);
+        }
+    }
+
+    std::cout << "Топологический порядок вершин: ";
+    for (int i = 0; i < g_size; i++) {
+        std::cout << vertx_list[i] + 1 << " ";
+    }
+    std::cout << std::endl;
+
+    delete[] visited;
+    delete[] vertx_list;
+}
+
+int main() {
+
+    std::string filename;
+    do  {
+        int file_num;
+        std::cout << "Введите номер текстового файла (1 или 2): ";
+        std::cin >> file_num;
+        if (file_num == 1) {
+            filename = "input1.txt";
+            break;
+        } else if (file_num == 2) {
+            filename = "input2.txt";
+            break;           
+        } else {std::cout << "Введено некоретное число." << std::endl;}
+
+    } while (true); 
+
+    int g_size;
+    std::ifstream file(filename);
+
+   if (file.is_open()) {
         
         file >> g_size;
         int** graph = Crt2DArr(g_size);
@@ -155,7 +204,7 @@ int main() {
 
         file.close();
 
-        DisplayGraphVertx(graph, g_size);
+        TopoVertxDisplay(graph, g_size);
         Del2DArr(graph, g_size);
     }
     else {
